@@ -2,7 +2,7 @@ FROM python:3.10-slim-bullseye
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      build-essential git && \
+      build-essential git ssh && \
     apt-get clean -y
 
 RUN mkdir -p /srv/ansible
