@@ -12,4 +12,4 @@ COPY galaxy-requirements.yml /srv/ansible/galaxy-requirements.yml
 
 RUN python3 -m venv /srv/ansible/env
 RUN /srv/ansible/env/bin/pip install -r /srv/ansible/requirements.txt
-RUN /srv/ansible/env/bin/ansible-galaxy -r /srv/ansible/galaxy-requirements.yml
+RUN /srv/ansible/env/bin/ansible-galaxy install -r /srv/ansible/galaxy-requirements.yml
