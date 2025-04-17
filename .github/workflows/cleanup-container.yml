@@ -1,0 +1,35 @@
+name: Delete container build from a branch
+
+on:
+  delete:
+    branches:
+      - '*'
+
+jobs:
+  delete-container:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete container package
+        env:
+          GITHUB_TOKEN: ${{ secrets.PACKAGE_DELETE_TOKEN }}
+          BRANCH_NAME: ${{ github.event.ref }}
+          OWNER: ${{ github.repository_owner }}
+          PACKAGE_NAME: ${{ github.repository }}
+
+        run: |
+          echo "Branch deleted: $BRANCH_NAME"
+          TAG="${BRANCH_NAME##*/}"  # Strip refs/heads/
+          echo "Fetching versions for package $PACKAGE_NAME with tag $TAG"
+          VERSIONS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/orgs/$OWNER/packages/container/$PACKAGE_NAME/versions" | jq -r ".[] | select(.metadata.container.tags[]? == \"$TAG\") | .id")
+
+          if [[ -z "$VERSIONS" ]]; then
+            echo "No versions found with tag '$TAG'."
+            exit 0
+          fi
+
+          for VERSION_ID in $VERSIONS; do
+            echo "Deleting version ID: $VERSION_ID"
+            curl -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" \
+              "https://api.github.com/orgs/$OWNER/packages/container/$PACKAGE_NAME/versions/$VERSION_ID"
+          done
